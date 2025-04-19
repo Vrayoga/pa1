@@ -28,6 +28,18 @@
                                                 <small class="text-danger">{{ $message }}</small>
                                             @enderror
                                         </div>
+
+
+
+                                        <div class="mb-3">
+                                            <label for="userEmail" class="form-label">Email</label>
+                                            <input type="email" class="form-control" name="email" id="email"
+                                                placeholder="Email" value="{{ old('email') }}">
+                                            @error('email')
+                                                <small class="text-danger">{{ $message }}</small>
+                                            @enderror
+                                        </div>
+
                                         <div class="mb-3">
                                             <label for="userEmail" class="form-label">Tanggal Lahir</label>
                                             <input type="date" class="form-control" name="tanggal_lahir"

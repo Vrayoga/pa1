@@ -10,7 +10,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
-
+use Illuminate\Auth\Events\Registered;
 
 class RegisterController extends Controller
 {
@@ -19,10 +19,15 @@ class RegisterController extends Controller
     {
         return view('auth.register');
     }
-
+    
     // Proses registrasi
     public function register(Request $request)
     {
+        $request->validate([
+            'nis' => 'required|string|max:18',
+            'email' => 'required|email|unique:users,email',
+        ]);
+
         // Cari siswa berdasarkan NIS
         $siswa = Siswa::where('nis', $request->nis)->first();
 
@@ -30,16 +35,30 @@ class RegisterController extends Controller
             return redirect()->back()->withErrors(['nis' => 'NIS tidak ditemukan.']);
         }
 
-        // Cari user yang terhubung dengan siswa
-        $user = User::where('siswas_id', $siswa->id)->first();
+        // Cek apakah NIS sudah pernah digunakan di tabel users
+        $userExists = User::where('nis', $request->nis)->exists();
 
-        if (!$user) {
-            return redirect()->back()->withErrors(['user' => 'User belum terdaftar untuk siswa ini.']);
+        if ($userExists) {
+            return redirect()->back()->withErrors(['nis' => 'NIS sudah digunakan.']);
         }
 
-        // Login user
+        // Input data ke tabel users
+        $name = $siswa->nama;
+        $email = $request->email;
+        $nis = $request->nis;
+        $password = Str::random(8); // Generate random password
+
+        $user = User::create([
+            'name' => $name,
+            'email' => $email,
+            'nis' => $nis,
+            'password' => bcrypt($password),
+        ]);
+
+        event(new Registered($user));
+
         Auth::login($user);
 
-        return redirect('/landing')->with('success', 'Berhasil login sebagai siswa.');
+        return redirect('/email/verify')->with('success', 'Berhasil login sebagai siswa.');
     }
 }

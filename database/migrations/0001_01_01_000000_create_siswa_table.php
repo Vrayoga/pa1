@@ -13,13 +13,8 @@ return new class extends Migration
     {
         Schema::create('siswas', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_siswa', 100);
-            $table->string('sekolah_asal', 100)->nullable();
-            $table->string('tanggal_lahir', 10)->nullable();
+            $table->string('nama', 100);
             $table->string('nis', 20)->unique();
-            $table->string('alamat', 50)->nullable();
-            $table->string('image', 50)->nullable();
-            $table->string('no_telepon', 20)->nullable();
             $table->timestamps();
         });
     }

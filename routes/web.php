@@ -2,11 +2,14 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KelasController;
+use Illuminate\Http\Request;
+
 use App\Http\Controllers\SiswaController;
+use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\KategoriController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/', function () {
@@ -21,14 +24,38 @@ Route::middleware(['guest'])->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login_action', [LoginController::class, 'login']);
 });
-Route::middleware(['auth'])->group(function () {
+
+
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+
+    return redirect('/home');
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+
+    return back()->with('message', 'Verification link sent!');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
+
+
+Route::middleware(['auth', 'verified', 'role_permission'])->group(function () {
+
+
+    Route::get('/home', [LoginController::class, 'showChangePasswordForm']);
+    Route::post('/home-post', [LoginController::class, 'changePasswordVerify']);
+
+
+
     // route siswa
-
-    Route::get('/landing', function () {
-        return view('welcome');
-    })->name('landing');
-
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index')->middleware('permission:view dashboard');
     Route::get('/siswa', [SiswaController::class, 'index'])->name('siswa.index');
     Route::get('/siswa-create', [SiswaController::class, 'create'])->name('siswa.create');
     Route::post('/siswa-store', [SiswaController::class, 'store'])->name('siswa.store');

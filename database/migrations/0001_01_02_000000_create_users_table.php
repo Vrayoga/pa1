@@ -16,12 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->nullable();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('image')->nullable();
-            $table->string('no_telepon')->nullable();
-            $table->string('tanggal_lahir')->nullable();
             $table->string('password');
-            $table->enum('role', ['admin', 'siswa', 'guru_pembimbing'])->default('siswa');
-            $table->foreignId('siswas_id')->nullable()->constrained()->onDelete('cascade');
+            $table->string('nis')->uniqid();
             $table->rememberToken();
             $table->timestamps();
         });
